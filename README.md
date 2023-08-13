@@ -1,11 +1,12 @@
 # Syosetsu-Downloader
-----
 
 1. install package
-    pip install -r requirements.txt
+
+```
+pip install -r requirements.txt
+```
+
+3. run download.py
 
 
-2. run download.py
-
-
-3. input url or code
+4. input url or code
