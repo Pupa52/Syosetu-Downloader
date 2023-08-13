@@ -1,0 +1,2 @@
+# Syosetsu-Downloader
+lol
