@@ -27,6 +27,7 @@ def main_page(url):
         'title' : title,
         'writer' : writer,
         'max_page' : len(subtitle_list),
+        'page' : {}
     }
 
     for i, st in enumerate(subtitle_list):
@@ -69,17 +70,21 @@ def sub_page(title):
         title = soup.select_one('p.novel_subtitle')
         honbun = soup.select('#novel_honbun > p')
 
-        file_name = title + '/' + i + '_' + novel_sublist[i]['subtitle'] + '.txt'
+        file_name = novel_info['title'] + '/' + i + '_' + novel_sublist[i]['subtitle_title'] + '.txt'
 
         with open(file_name, 'w', encoding='utf-8') as f:
             honbun_text = title.get_text().strip() + '\n'
             for h in honbun:
-                honbun_text + h.get_text().strip() + '\n'
-        print(f'number {i} complete\n')
-        time.sleep(0.2)
+                honbun_text += h.get_text().strip() + '\n'
+            f.write(honbun_text)
+
+        print(f'number {i} complete')
+        time.sleep(0.1)
 
 def novel_download(novel_code: str):
-    if novel_code.startswith('/'):
+    if novel_code.startswith('https://ncode.syosetu.com'):
+        url = novel_code
+    elif novel_code.startswith('/'):
         url = 'https://ncode.syosetu.com' + novel_code
     else:
         url = 'https://ncode.syosetu.com/' + novel_code
@@ -88,5 +93,9 @@ def novel_download(novel_code: str):
     sub_page(title)
 
 if __name__ == '__main__':
-    novel_code = '/n7361gs'
-    novel_download(novel_code)
+    while True:
+        print('Input url or novel_code')
+        print('ex)https://ncode.syosetu.com/aaaaaa/ or aaaaaa')
+        novel_code = input('>')
+
+        novel_download(novel_code)
