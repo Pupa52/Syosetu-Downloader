@@ -4,46 +4,57 @@ import queue
 import threading
 from downloaderCLI import novel_download
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QIcon
 
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon('./resource/web.png'))
+        self.setWindowTitle('title')
         self.initUI()
     
     def initUI(self):
-        exitAction = QAction('Exit', self)
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(qApp.quit)
+        # main panel
+        mainWidget = QWidget()
 
-        self.statusBar().showMessage('Ready')
+        # add url text edit
+        self.download_url = QLineEdit(self)
+        self.download_url.returnPressed.connect(self.event_btn_download)
 
-        menubar = self.menuBar()
-        menubar.setNativeMenuBar(False)
-        filemenu = menubar.addMenu('&File')
-        filemenu.addAction(exitAction)
+        # add download button
+        self.download_btn = QPushButton('download', self)
+        self.download_btn.clicked.connect(self.event_btn_download)
 
-        btn = QPushButton('Quit', self)
-        btn.move(50, 50)
-        btn.resize(btn.sizeHint())
-        btn.clicked.connect(QCoreApplication.instance().quit)
+        # add textbrowser for download log
+        self.download_log = QTextBrowser(self)
 
-        self.setWindowTitle('title')
-        self.setWindowIcon(QIcon('./resource/web.png'))
-        
+        # set Layout
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.download_url)
+        hbox.addWidget(self.download_btn)
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addLayout(hbox)
+        mainLayout.addWidget(self.download_log)
+
+        mainWidget.setLayout(mainLayout)
+        self.setCentralWidget(mainWidget)
+
+        # add statusbar
+        self.statusBar = QStatusBar(self)
+        self.setStatusBar(self.statusBar)
+        self.statusBar.showMessage('downloader 0.0.1')
+
         # x, y, width, height
-        self.resize(500, 400)
+        # self.resize(500, 400)
+        self.setGeometry(500,500,500,500)
 
-        self.center()
         self.show()
-
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+    
+    def event_btn_download(self):
+        ncode = self.download_url.text()
+        self.download_log.append(ncode)
+        print(ncode)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
