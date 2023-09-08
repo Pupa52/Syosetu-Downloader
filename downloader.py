@@ -2,19 +2,7 @@ import requests
 import json
 import os
 import time
-from tqdm import tqdm
 from bs4 import BeautifulSoup
-
-def novel_download(novel_code: str):
-    if novel_code.startswith('https://ncode.syosetu.com'):
-        url = novel_code
-    elif novel_code.startswith('/'):
-        url = 'https://ncode.syosetu.com' + novel_code
-    else:
-        url = 'https://ncode.syosetu.com/' + novel_code
-
-    title = main_page(url)
-    sub_page(title)
 
 def url_request(url):
     try:
@@ -81,8 +69,8 @@ def sub_page(title):
     # novel subpage infomation dictionary
     pages = novel_info['page']
 
-    for page in tqdm(pages.keys(), desc='downloading'):
-
+    for page in pages.keys():
+        print(f'{title} : {page}')
         html = url_request(url + page)
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -100,3 +88,14 @@ def sub_page(title):
 
         # delay 0.5
         time.sleep(0.5)
+
+def novel_download(novel_code: str):
+    if novel_code.startswith('https://ncode.syosetu.com'):
+        url = novel_code
+    elif novel_code.startswith('/'):
+        url = 'https://ncode.syosetu.com' + novel_code
+    else:
+        url = 'https://ncode.syosetu.com/' + novel_code
+
+    title = main_page(url)
+    sub_page(title)

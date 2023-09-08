@@ -1,8 +1,6 @@
-import sys
-import time
-import queue
-import threading
-from downloaderCLI import novel_download
+import sys, os
+import threading as th
+from downloader import novel_download
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 
@@ -11,13 +9,14 @@ class App(QMainWindow):
         super().__init__()
         self.setWindowIcon(QIcon('./resource/web.png'))
         self.setWindowTitle('title')
+        self.workq = []
         self.initUI()
     
     def initUI(self):
         # main panel
         mainWidget = QWidget()
 
-        # add url text edit
+        # add url lineedit
         self.download_url = QLineEdit(self)
         self.download_url.returnPressed.connect(self.event_btn_download)
 
@@ -25,8 +24,11 @@ class App(QMainWindow):
         self.download_btn = QPushButton('download', self)
         self.download_btn.clicked.connect(self.event_btn_download)
 
-        # add textbrowser for download log
+        # add novellist textbrowser
         self.download_log = QTextBrowser(self)
+        novel_list = os.listdir('./downloads')
+        for novel in novel_list:
+            self.download_log.append(novel)
 
         # set Layout
         hbox = QHBoxLayout()
@@ -45,16 +47,17 @@ class App(QMainWindow):
         self.setStatusBar(self.statusBar)
         self.statusBar.showMessage('downloader 0.0.1')
 
-        # x, y, width, height
-        # self.resize(500, 400)
         self.setGeometry(500,500,500,500)
-
         self.show()
     
     def event_btn_download(self):
         ncode = self.download_url.text()
-        self.download_log.append(ncode)
-        print(ncode)
+        self.download_url.clear()
+
+        thread1 = th.Thread(target=novel_download, args=(ncode,))
+        thread1.setDaemon(True)
+        thread1.start()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
