@@ -8,7 +8,10 @@
 pip install -r requirements.txt
 ```
 
-3. run downloaderCLI.py
+3. run main.py
 
 
 4. input url or code
+
+
+5. click download button or enter

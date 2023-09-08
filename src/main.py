@@ -1,6 +1,6 @@
 import sys, os
 import threading as th
-from downloader import novel_download
+from downloader import main_page, sub_page, check_url
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 
@@ -54,10 +54,15 @@ class App(QMainWindow):
         ncode = self.download_url.text()
         self.download_url.clear()
 
-        thread1 = th.Thread(target=novel_download, args=(ncode,))
-        thread1.setDaemon(True)
-        thread1.start()
+        url = check_url(ncode)
+        title = main_page(url)
 
+        if title == 404:
+            self.download_log.append(f'{ncode} is not exist')
+        else:
+            thread1 = th.Thread(target=sub_page, args=(title,))
+            thread1.setDaemon(True)
+            thread1.start()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

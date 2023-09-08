@@ -1,7 +1,7 @@
 import requests
 import json
-import os
 import time
+import os
 from bs4 import BeautifulSoup
 
 def url_request(url):
@@ -9,13 +9,15 @@ def url_request(url):
         res = requests.get(url, timeout=5.0, headers={'User-Agent':'Mozilla/5.0'})
         if res.status_code == 200:
             return res.text
-        return res.raise_for_status()
+        return res.status_code
     except requests.exceptions.Timeout:
         print(f'{url} request time out')
 
 # novel main page download function 
 def main_page(url):
     html = url_request(url)
+    if html == 404:
+        return 404
     soup = BeautifulSoup(html, 'html.parser')
 
     title = soup.find('p', class_='novel_title').get_text()
@@ -89,13 +91,11 @@ def sub_page(title):
         # delay 0.5
         time.sleep(0.5)
 
-def novel_download(novel_code: str):
-    if novel_code.startswith('https://ncode.syosetu.com'):
-        url = novel_code
-    elif novel_code.startswith('/'):
-        url = 'https://ncode.syosetu.com' + novel_code
+def check_url(ncode: str):
+    if ncode.startswith('https://ncode.syosetu.com/'):
+        url = ncode
+    elif ncode.startswith('/'):
+        url = 'https://ncode.syosetu.com' + ncode
     else:
-        url = 'https://ncode.syosetu.com/' + novel_code
-
-    title = main_page(url)
-    sub_page(title)
+        url = 'https://ncode.syosetu.com/' + ncode
+    return url
