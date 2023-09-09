@@ -1,23 +1,35 @@
-import requests
 import json
 import time
 import os
+import requests
 from bs4 import BeautifulSoup
 
-def url_request(url):
+def url_request(url) -> str:
     try:
         res = requests.get(url, timeout=5.0, headers={'User-Agent':'Mozilla/5.0'})
         if res.status_code == 200:
             return res.text
-        return res.status_code
     except requests.exceptions.Timeout:
         print(f'{url} request time out')
+    return str(res.status_code)
 
-# novel main page download function 
-def main_page(url):
+def url_check(ncode: str) -> str:
+    if ncode.startswith('https://ncode.syosetu.com/'):
+        url = ncode
+    elif ncode.startswith('/'):
+        url = 'https://ncode.syosetu.com' + ncode
+    else:
+        url = 'https://ncode.syosetu.com/' + ncode
+    return url
+
+# novel main page download function
+def main_page(download_path, ncode: str) -> str:
+    url = url_check(ncode)
     html = url_request(url)
-    if html == 404:
-        return 404
+
+    if html == '404':
+        return html
+
     soup = BeautifulSoup(html, 'html.parser')
 
     title = soup.find('p', class_='novel_title').get_text()
@@ -26,7 +38,8 @@ def main_page(url):
 
     # novel infomation dictionary to create json
     novel_info = {
-        'url' : url,
+        'url' : url + '/',
+        'ncode' : ncode,
         'title' : title,
         'writer' : writer,
         'max_page' : len(sublist),
@@ -34,68 +47,57 @@ def main_page(url):
     }
 
     # save each subpage infomation
-    for i, subtitle in enumerate(sublist):
-        novel_info['page'][i + 1] = {
+    for i, subtitle in enumerate(sublist, start=1):
+        novel_info['page'][i] = {
             'subtitle_title' : subtitle.select_one('dd.subtitle > a').get_text(),
             'subtitle_url' : subtitle.select_one('dd.subtitle > a').get('href'),
             'subtitle_update' : subtitle.select_one('dt.long_update').get_text(),
         }
 
-    # download folder create
-    if not os.path.exists('downloads'):
-        os.mkdir('downloads')
-
     # download novel folder create
-    directory_name = f'downloads/{title}'
-    if not os.path.exists(directory_name):
-        os.mkdir(directory_name)
+    download_path = download_path + '/' + title
+    print(download_path)
+    if not os.path.exists(download_path):
+        os.makedirs(download_path, exist_ok=True)
 
     # novel infomation json.dump
-    novel_json_path = directory_name + '/' + title + '.json'
-    with open(novel_json_path, 'w', encoding='utf-8') as novel_json:
-        json.dump(novel_info, novel_json, ensure_ascii=False, indent=4)
+    novel_json_path = f'{download_path}/{ncode}.json'
+    novel_info_json_dump(novel_json_path, novel_info)
 
     return title
 
 # novel sub page download function
-def sub_page(title):
-
+def sub_page(title, ncode, download_path, download_delay) -> None:
     # novel infomation json.load
-    novel_json_path = f'downloads/{title}/{title}.json'
-    with open(novel_json_path, 'r', encoding='utf-8') as novel_json:
-        novel_info = json.load(novel_json)
+    download_path = download_path + '/' + title
+    novel_json_path = f'{download_path}/{ncode}.json'
+    novel_info = novel_info_json_load(novel_json_path)
 
-    # https://syosetu.com/
-    url = novel_info['url'] + '/'
-
-    # novel subpage infomation dictionary
-    pages = novel_info['page']
+    url = novel_info['url'] # title url
+    pages = novel_info['page'] # subtitle dict
 
     for page in pages.keys():
-        print(f'{title} : {page}')
         html = url_request(url + page)
         soup = BeautifulSoup(html, 'html.parser')
 
-        title = soup.select_one('p.novel_subtitle')
+        subtitle = soup.select_one('p.novel_subtitle').get_text().strip()
         contents = soup.select('#novel_honbun > p')
 
-        file_name = 'downloads/' + novel_info['title'] + '/' + page + '_' + title.get_text() + '.txt'
+        novel_text = subtitle + '\n'
+        for line in contents:
+            novel_text += line.get_text().strip() + '\n'
 
-        content_text = title.get_text().strip() + '\n'
-        for content in contents:
-            content_text += content.get_text().strip() + '\n'
+        file_name = f'{download_path}/{page}_{subtitle}.txt'
+        with open(file_name, 'w', encoding='utf-8') as novel_text_file:
+            novel_text_file.write(novel_text)
 
-        with open(file_name, 'w', encoding='utf-8') as f:
-            f.write(content_text)
+        time.sleep(download_delay)
 
-        # delay 0.5
-        time.sleep(0.5)
+def novel_info_json_dump(novel_json_path, novel_info) -> None:
+    with open(novel_json_path, 'w', encoding='utf-8') as novel_json:
+        json.dump(novel_info, novel_json, ensure_ascii=False, indent=4)
 
-def check_url(ncode: str):
-    if ncode.startswith('https://ncode.syosetu.com/'):
-        url = ncode
-    elif ncode.startswith('/'):
-        url = 'https://ncode.syosetu.com' + ncode
-    else:
-        url = 'https://ncode.syosetu.com/' + ncode
-    return url
+def novel_info_json_load(novel_json_path) -> json:
+    with open(novel_json_path, 'r', encoding='utf-8') as novel_json:
+        novel_info = json.load(novel_json)
+    return novel_info

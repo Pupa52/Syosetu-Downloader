@@ -1,15 +1,16 @@
 import sys, os
-import threading as th
-from downloader import main_page, sub_page, check_url
+from threading import Thread
+from downloader import main_page, sub_page, url_check
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon('./resource/web.png'))
+        self.setWindowIcon(QIcon('./img/web.png'))
         self.setWindowTitle('title')
-        self.workq = []
+        self.download_path = 'downloads'
+        self.download_delay = 0.5
         self.initUI()
     
     def initUI(self):
@@ -25,10 +26,7 @@ class App(QMainWindow):
         self.download_btn.clicked.connect(self.event_btn_download)
 
         # add novellist textbrowser
-        self.download_log = QTextBrowser(self)
-        novel_list = os.listdir('./downloads')
-        for novel in novel_list:
-            self.download_log.append(novel)
+        self.download_list = QTextBrowser(self)
 
         # set Layout
         hbox = QHBoxLayout()
@@ -37,7 +35,7 @@ class App(QMainWindow):
 
         mainLayout = QVBoxLayout()
         mainLayout.addLayout(hbox)
-        mainLayout.addWidget(self.download_log)
+        mainLayout.addWidget(self.download_list)
 
         mainWidget.setLayout(mainLayout)
         self.setCentralWidget(mainWidget)
@@ -51,18 +49,23 @@ class App(QMainWindow):
         self.show()
     
     def event_btn_download(self):
+        if not os.path.exists(self.download_path):
+            os.mkdir(self.download_path)
+
         ncode = self.download_url.text()
         self.download_url.clear()
 
-        url = check_url(ncode)
-        title = main_page(url)
+        title = main_page(self.download_path, ncode)
 
-        if title == 404:
-            self.download_log.append(f'{ncode} is not exist')
+        if title == '404':
+            self.download_list.append(f'{ncode} is not exist')
         else:
-            thread1 = th.Thread(target=sub_page, args=(title,))
-            thread1.setDaemon(True)
-            thread1.start()
+            donwload_thread = Thread(
+                target=sub_page,
+                args=(title, ncode, self.download_path, self.download_delay)
+            )
+            donwload_thread.daemon = True
+            donwload_thread.start()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
