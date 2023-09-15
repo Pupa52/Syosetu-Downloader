@@ -1,30 +1,10 @@
-aiohttp==3.8.5
-aiosignal==1.3.1
-astroid==2.15.6
-async-timeout==4.0.3
-attrs==23.1.0
-beautifulsoup4 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_bczxn9gqkq/croot/beautifulsoup4-split_1681493044307/work
-brotlipy==0.7.0
-certifi @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_2emnmf1qow/croot/certifi_1690232232440/work/certifi
-cffi @ file:///Users/ec2-user/ci_py311/cffi_1678315312775/work
-charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
-cryptography @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_e2pplk40z3/croot/cryptography_1689373680118/work
-dill==0.3.7
-frozenlist==1.4.0
-idna @ file:///Users/ec2-user/ci_py311/idna_1678315819133/work
-isort==5.12.0
-lazy-object-proxy==1.9.0
-mccabe==0.7.0
-multidict==6.0.4
-platformdirs==3.10.0
-pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
-pylint==2.17.5
-pyOpenSSL @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_7fwdg30481/croot/pyopenssl_1690223429070/work
-PySocks @ file:///Users/ec2-user/ci_py311/pysocks_1678315868424/work
-requests @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_fa2zrx4csg/croot/requests_1690400223595/work
-soupsieve @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_a42j8ggi70/croot/soupsieve_1680518482618/work
-tomlkit==0.12.1
-tqdm==4.66.1
-urllib3 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_1968zekhce/croot/urllib3_1686163172153/work
-wrapt==1.15.0
-yarl==1.9.2
+beautifulsoup4==4.12.2
+certifi==2023.7.22
+charset-normalizer==3.2.0
+idna==3.4
+PyQt5==5.15.9
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.12.2
+requests==2.31.0
+soupsieve==2.5
+urllib3==2.0.4
