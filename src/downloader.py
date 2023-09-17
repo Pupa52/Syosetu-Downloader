@@ -61,16 +61,16 @@ def main_page(download_path, ncode: str) -> str:
         os.makedirs(download_path, exist_ok=True)
 
     # novel infomation json.dump
-    novel_json_path = f'{download_path}/{ncode}.json'
+    novel_json_path = f'{download_path}/novel_info.json'
     novel_info_json_dump(novel_json_path, novel_info)
 
     return title
 
 # novel sub page download function
-def sub_page(title, ncode, download_path, download_delay) -> None:
+def sub_page(title, download_path, download_delay) -> None:
     # novel infomation json.load
     download_path = download_path + '/' + title
-    novel_json_path = f'{download_path}/{ncode}.json'
+    novel_json_path = f'{download_path}/novel_info.json'
     novel_info = novel_info_json_load(novel_json_path)
 
     url = novel_info['url'] # title url

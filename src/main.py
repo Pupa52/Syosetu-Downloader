@@ -1,8 +1,10 @@
 import sys, os
+from natsort import natsorted
 from threading import Thread
-from downloader import main_page, sub_page, url_check
+from downloader import main_page, sub_page, url_check, novel_info_json_load
+from pannels import DownloadPannel, ListPannel, ViewPannel
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QTextCursor
 from PyQt5.QtCore import QSize
 
 class App(QMainWindow):
@@ -12,88 +14,90 @@ class App(QMainWindow):
         self.setWindowTitle('title')
         self.download_path = 'downloads'
         self.download_delay = 0.5
+        self.mainPannel = QWidget()
+        self.dp = DownloadPannel()
+        self.lp = ListPannel()
+        self.vp = ViewPannel()
         self.initUI()
         self.center()
     
     def initUI(self):
-        # main panel
-        mainPannel = QWidget()
-        downlaodPannel = QWidget()
-        listPannel = QWidget()
+        #
+        tabs = QTabWidget()
+        tabs.addTab(self.mainPannel, 'main')
+        tabs.addTab(self.vp, 'View')
 
         # add url lineedit
-        self.download_url = QLineEdit(self)
-        self.download_url.returnPressed.connect(self.event_btn_download)
+        self.dp.download_url.returnPressed.connect(self.event_btn_download)
 
         # add download button
-        self.download_btn = QPushButton('download', self)
-        self.download_btn.clicked.connect(self.event_btn_download)
+        self.dp.download_btn.clicked.connect(self.event_btn_download)
 
         # add novellist textbrowser
-        # self.download_list = QTextBrowser(self)
-        self.download_novel_list = QListWidget(self)
-        self.download_novel_list.itemDoubleClicked.connect(self.event_list_novel)
+        self.dp.download_list.itemDoubleClicked.connect(self.event_list_novel)
         for novel in os.listdir(self.download_path):
-            self.download_novel_list.addItem(novel)
+            self.dp.download_list.addItem(novel)
 
-        self.novel_sub_list = QListWidget(self)
-
-        # set Layout - download pannel
-        downloadLayout = QVBoxLayout()
-
-        inputBox = QHBoxLayout()
-        inputBox.addWidget(self.download_url)
-        inputBox.addWidget(self.download_btn)
-
-        downloadLayout.addLayout(inputBox)
-        downloadLayout.addWidget(self.download_novel_list)
-
-        downlaodPannel.setLayout(downloadLayout)
-
-        # set Layout - list pannel
-        listLayout = QVBoxLayout()
-        listLayout.addWidget(self.novel_sub_list)
-
-        listPannel.setLayout(listLayout)
+        self.lp.subtitle_list.itemDoubleClicked.connect(self.event_view_novel)
 
         # set Layout
         mainLayout = QHBoxLayout()
-        mainLayout.addWidget(downlaodPannel)
-        mainLayout.addWidget(listPannel)
+        mainLayout.addWidget(self.dp)
+        mainLayout.addWidget(self.lp)
 
-        mainPannel.setLayout(mainLayout)
-        self.setCentralWidget(mainPannel)
+        self.mainPannel.setLayout(mainLayout)
 
         # add statusbar
         self.statusBar = QStatusBar(self)
         self.setStatusBar(self.statusBar)
         self.statusBar.showMessage('downloader 0.0.1')
+
+        self.setCentralWidget(tabs)
     
     def event_btn_download(self):
         if not os.path.exists(self.download_path):
             os.mkdir(self.download_path)
 
-        ncode = self.download_url.text()
-        self.download_url.clear()
+        ncode = self.dp.download_url.text()
+        self.dp.download_url.clear()
 
         title = main_page(self.download_path, ncode)
-        self.download_novel_list.addItem(title)
+        self.dp.download_list.addItem(title)
 
         donwload_thread = Thread(
             target=sub_page,
-            args=(title, ncode, self.download_path, self.download_delay)
+            args=(title, self.download_path, self.download_delay)
             )
         donwload_thread.daemon = True
         donwload_thread.start()
 
     def event_list_novel(self):
-        items = self.download_novel_list.selectedItems()
-        items[0].text
+        self.lp.subtitle_list.clear()
+        items = self.dp.download_list.selectedItems()
+        title = items[0].text()
+        novel_path = f'{self.download_path}/{title}/'
+        subtitles = os.listdir(novel_path)
+        for subtitle in natsorted(subtitles):
+            self.lp.subtitle_list.addItem(subtitle)
+        
+    def event_view_novel(self, item):
+        self.vp.novel_view.clear()
+        subtitle = item.text()
+        
+        title = self.dp.download_list.selectedItems()[0].text()
+        subtitle_path = f'{self.download_path}/{title}/{subtitle}'
+        with open(subtitle_path, 'r', encoding='utf-8') as novel_text:
+            contents = novel_text.read()
+        
+        self.vp.novel_view.appendPlainText(contents)
+        curser = self.vp.novel_view.textCursor()
+        curser.movePosition(QTextCursor.Start)
+        self.vp.novel_view.setTextCursor(curser)
 
     def center(self):
         qRect = self.frameGeometry()
         qPoint = QDesktopWidget().availableGeometry()
-        qRect.setSize(QSize(1000, 600))
+        qRect.setSize(QSize(1000, 800))
         qRect.moveCenter(qPoint.center())
         self.setGeometry(qRect)
 

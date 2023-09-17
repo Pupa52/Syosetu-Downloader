@@ -2,6 +2,7 @@ beautifulsoup4==4.12.2
 certifi==2023.7.22
 charset-normalizer==3.2.0
 idna==3.4
+natsort==8.4.0
 PyQt5==5.15.9
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.12.2
